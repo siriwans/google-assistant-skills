@@ -15,16 +15,16 @@ restService.use(
 restService.use(bodyParser.json());
 
 restService.post( "/", async function (req, res) {
-    /*var intent = req.body.queryResult && 
+    var intent = req.body.queryResult && 
     req.body.queryResult.intent && 
     req.body.queryResult.intent.displayName 
     ? req.body.queryResult.intent.displayName 
-    :  "No intent."*/
+    :  "No intent."
 
-    var intent = req.body.queryResult && 
-    req.body.intent && req.body.intent.displayName
-    ? req.body.intent.displayName
-    :  "No intent." 
+    // var intent = req.body.queryResult && 
+    // req.body.intent
+    // ? req.body.intent 
+    // :  "No intent." 
 
     var testing = "nothing."
 
@@ -69,18 +69,18 @@ restService.post( "/", async function (req, res) {
     : "Seems like some problem. Speak again.";
     
     testing = testing + " passed inputs."
-    var speech = req.body.queryResult &&
-    req.body.queryResult.parameters &&
-    req.body.owner &&
-    req.body.repo
-    ? req.body.owner
-    : "Seems like some problem. Speak again.";
+    // var speech = req.body.queryResult &&
+    // req.body.queryResult.parameters &&
+    // req.body.owner &&
+    // req.body.repo
+    // ? req.body.owner
+    // : "Seems like some problem. Speak again.";
     
     var myerror = false;
-    // var owner = req.body.queryResult.parameters.owner;
-    // var repo = req.body.queryResult.parameters.repo;
-    var owner = req.body.owner
-    var repo = req.body.repo
+    var owner = req.body.queryResult.parameters.owner;
+    var repo = req.body.queryResult.parameters.repo;
+    // var owner = req.body.owner
+    // var repo = req.body.repo
 
     const getIssues = async () => 
     {
