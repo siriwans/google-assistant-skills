@@ -22,8 +22,8 @@ restService.post( "/", async function (req, res) {
     :  "No intent."*/
 
     var intent = req.body.queryResult && 
-    req.body.intent
-    ? req.body.intent 
+    req.body.intent && req.body.intent.displayName
+    ? req.body.intent.displayName
     :  "No intent." 
 
     var testing = "nothing."
