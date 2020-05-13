@@ -115,7 +115,7 @@ restService.post( "/", async function (req, res) {
     }
   }
 
-  if (intent === 'assigned open issues')
+  if (intent === 'number of assigned open issues')
   {
     var speech = req.body.queryResult &&
     req.body.queryResult.parameters &&
@@ -172,6 +172,67 @@ restService.post( "/", async function (req, res) {
       }
 
       speech = assignee + " has " + count + " open issues assigned in " + owner + "/" + repo + "."
+    }
+  }
+
+  if (intent === 'available labels')
+  {
+    var speech = req.body.queryResult &&
+    req.body.queryResult.parameters &&
+    req.body.queryResult.parameters.owner && 
+    req.body.queryResult.parameters.repo
+    ? req.body.queryResult.parameters.owner
+    : "Seems like some problem. Speak again.";
+    
+    // testing = testing + " passed inputs."
+    // var speech = req.body.queryResult &&
+    // req.body.queryResult.parameters &&
+    // req.body.owner &&
+    // req.body.repo
+    // ? req.body.owner
+    // : "Seems like some problem. Speak again.";
+    
+    var myerror = false;
+    var owner = req.body.queryResult.parameters.owner;
+    var repo = req.body.queryResult.parameters.repo;
+    // var owner = req.body.owner
+    // var repo = req.body.repo
+
+    const getIssues = async () => 
+    {
+      try 
+      {
+        testing = testing + " in getIssues(). " + owner + repo
+        return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues?state=all`);
+      } catch (error) 
+      {
+        myerror = true;
+        speech = 'Cannot get number of open issues assigned to ' + assignee + ' in ' + owner + "/" + repo + '.';
+        console.error("ERROR OCCURED: " + error);
+      }
+    }
+
+    const issues = await getIssues()
+
+    if (!myerror)
+    {
+      var count = 0;
+      var labels = new Set();
+      var json = issues.data;
+      testing = testing + " counting!!!!"
+      for(var i = 0; i < json.length; i++) {
+        for (var j = 0; j < json[i].labels.length; j++)
+        {
+          var lbl = json[i].labels[j].name;
+          labels.add(lbl);
+        }
+      }
+      speech = "The available labels are "
+      for(var labl of labels.values())
+      {
+        speech += labl + ", "
+      }
+      speech = speech.slice(0, speech.length - 2) + "."
     }
   }
 
