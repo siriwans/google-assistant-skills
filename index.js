@@ -59,7 +59,7 @@ restService.post( "/", async function (req, res) {
       }
     }
 
-  if (intent === 'open issues')
+  if (intent === 'number of open issues')
   {
     var speech = req.body.queryResult &&
     req.body.queryResult.parameters &&
@@ -91,7 +91,7 @@ restService.post( "/", async function (req, res) {
       } catch (error) 
       {
         myerror = true;
-        speech = 'Cannot get number of open issues for the repo ' + repo + ' under owner ' + owner + '.';
+        speech = 'Cannot get number of open issues for ' + owner + "/" + repo + '.';
         console.error("ERROR OCCURED: " + error);
       }
     }
@@ -112,6 +112,66 @@ restService.post( "/", async function (req, res) {
       }
 
       speech = owner + "/" + repo + " has " + count + " open issues."
+    }
+  }
+
+  if (intent === 'assigned open issues')
+  {
+    var speech = req.body.queryResult &&
+    req.body.queryResult.parameters &&
+    req.body.queryResult.parameters.owner && 
+    req.body.queryResult.parameters.repo &&
+    req.body.queryResult.parameters.assignee
+    ? req.body.queryResult.parameters.assignee
+    : "Seems like some problem. Speak again.";
+    
+    testing = testing + " passed inputs."
+    // var speech = req.body.queryResult &&
+    // req.body.queryResult.parameters &&
+    // req.body.owner &&
+    // req.body.repo &&
+    // req.body.assignee
+    // ? req.body.assignee
+    // : "Seems like some problem. Speak again.";
+    
+    var myerror = false;
+    var owner = req.body.queryResult.parameters.owner;
+    var repo = req.body.queryResult.parameters.repo;
+    var assignee = req.body.queryResult.parameters.assignee
+    // var owner = req.body.owner
+    // var repo = req.body.repo
+    // var assignee = req.body.assignee
+
+    const getIssues = async () => 
+    {
+      try 
+      {
+        testing = testing + " in getIssues(). " + owner + repo
+        return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues?assignee=${assignee}`);
+      } catch (error) 
+      {
+        myerror = true;
+        speech = 'Cannot get number of open issues assigned to ' + assignee + ' in ' + owner + "/" + repo + '.';
+        console.error("ERROR OCCURED: " + error);
+      }
+    }
+
+    const issues = await getIssues()
+
+    if (!myerror)
+    {
+      var count = 0;
+      var json = issues.data;
+      testing = testing + " counting!!!!"
+      for(var i = 0; i < json.length; i++) {
+        var obj = json[i];
+        if (obj.state === 'open')
+        {
+          count = count + 1;
+        }
+      }
+
+      speech = assignee + " has " + count + " open issues assigned in " + owner + "/" + repo + "."
     }
   }
 
