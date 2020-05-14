@@ -14,82 +14,75 @@ restService.use(
 
 restService.use(bodyParser.json());
 
-restService.post( "/", async function (req, res) {
-    var intent = req.body.queryResult && 
-    req.body.queryResult.intent && 
-    req.body.queryResult.intent.displayName 
-    ? req.body.queryResult.intent.displayName 
-    :  "No intent."
+restService.post("/", async function (req, res) {
+  var intent = req.body.queryResult && 
+  req.body.queryResult.intent && 
+  req.body.queryResult.intent.displayName 
+  ? req.body.queryResult.intent.displayName 
+  :  "No intent."
 
-    // var intent = req.body.queryResult && 
-    // req.body.intent
-    // ? req.body.intent 
-    // :  "No intent." 
+  // var intent = req.body.queryResult &&
+  //   req.body.intent
+  //   ? req.body.intent
+  //   : "No intent."
 
-    var repo = req.body.queryResult &&
-      req.body.queryResult.parameters &&
-      req.body.queryResult.parameters.repo ? req.body.queryResult.parameters.repo : null
-    
-    var owner = req.body.queryResult &&
-      req.body.queryResult.parameters &&
-      req.body.queryResult.parameters.owner ? req.body.queryResult.parameters.owner : null
+  var repo = req.body.queryResult &&
+    req.body.queryResult.parameters &&
+    req.body.queryResult.parameters.repo ? req.body.queryResult.parameters.repo : null
 
-    // var repo = req.body.repo ? req.body.repo : null
-    // var owner = req.body.owner ? req.body.owner : null
+  var owner = req.body.queryResult &&
+    req.body.queryResult.parameters &&
+    req.body.queryResult.parameters.owner ? req.body.queryResult.parameters.owner : null
 
-    var testing = "nothing."
+  // var repo = req.body.repo ? req.body.repo : null
+  // var owner = req.body.owner ? req.body.owner : null
 
-    var speech = "A problem occured. Intent: " + intent + ". " + "Repo: " + repo + ". " + "Owner: " + owner + "."
+  var testing = "nothing."
 
-    repo = repo ? repo.replace(/\s/g, '') : null
-    owner = owner ? owner.replace(/\s/g, '') : null
+  var speech = "A problem occured. Intent: " + intent + ". " + "Repo: " + repo + ". " + "Owner: " + owner + "."
 
-    if (intent === 'number of repos for user')
-    {
-      var username = req.body.queryResult.parameters.userName
-        ? req.body.queryResult.parameters.userName : null;
+  repo = repo ? repo.replace(/\s/g, '') : null
+  owner = owner ? owner.replace(/\s/g, '') : null
 
-      speech = "Something went wrong. Possibly the username parameter."
-      
-      if (username)
-      {
-        var myerror = false;
+  if (intent === 'number of repos for user') {
+    var username = req.body.queryResult.parameters.userName
+      ? req.body.queryResult.parameters.userName : null;
 
-        const getRepos = async () => {
-          try {
-            return await axios.get(`https://api.github.com/users/${username}/repos`);
-          } catch (error) {
-            myerror = true;
-            speech = 'Cannot get number of repos for ' + username + '.';
-            console.error("ERROR OCCURED: " + error);
-          }
-        }
+    speech = "Something went wrong. Possibly the username parameter."
 
-        const repos = await getRepos()
+    if (username) {
+      var myerror = false;
 
-        if (!myerror)
-        {
-          speech = 'User ' + username + ' has ' + Object.keys(repos.data).length + ' number of repositories.';
+      const getRepos = async () => {
+        try {
+          return await axios.get(`https://api.github.com/users/${username}/repos`);
+        } catch (error) {
+          myerror = true;
+          speech = 'Cannot get number of repos for ' + username + '.';
+          console.error("ERROR OCCURED: " + error);
         }
       }
-    }
 
-  if (intent === 'number of open issues' && repo && owner)
-  {
+      const repos = await getRepos()
+
+      if (!myerror) {
+        speech = 'User ' + username + ' has ' + Object.keys(repos.data).length + ' number of repositories.';
+      }
+    }
+  }
+
+  if (intent === 'number of open issues' && repo && owner) {
     speech = "Something went wrong.";
-    
+
     testing = testing + " passed inputs."
-    
+
     var myerror = false;
 
-    const getIssues = async () => 
-    {
-      try 
-      {
+    const getIssues = async () => {
+      try {
         testing = testing + " in getIssues(). " + owner + repo
         return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues`);
-      } catch (error) 
-      {
+      } catch (error) {
         myerror = true;
         speech = 'Cannot get number of open issues for ' + owner + "/" + repo + '.';
         console.error("ERROR OCCURED: " + error);
@@ -98,86 +91,26 @@ restService.post( "/", async function (req, res) {
 
     const issues = await getIssues()
 
-    if (!myerror)
-    {
+    if (!myerror) {
       var count = 0;
       var json = issues.data;
       testing = testing + " counting!!!!"
-      for(var i = 0; i < json.length; i++) {
-        var obj = json[i];
-        if (obj.state === 'open')
-        {
-          count = count + 1;
-        }
-      }
 
-      speech = owner + "/" + repo + " has " + count + " open issues."
+      speech = owner + "/" + repo + " has " + json.length + " open issues."
     }
   }
 
-  if (intent === 'number of assigned open issues'  && repo && owner )
-  {
-    var assignee = req.body.queryResult.parameters.assignee
-      ? req.body.queryResult.parameters.assignee : null
-    
-    testing = testing + " passed inputs."
-
-    // var assignee = req.body.assignee ? req.body.assignee : null;
-
-    speech = "Something went wrong. Possibly the assignee parameter."
-
-    if (assignee)
-    {
-      var myerror = false;
-      const getIssues = async () => 
-      {
-        try 
-        {
-          testing = testing + " in getIssues(). " + owner + repo
-          return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues?assignee=${assignee}`);
-        } catch (error) 
-        {
-          myerror = true;
-          speech = 'Cannot get number of open issues assigned to ' + assignee + ' in ' + owner + "/" + repo + '.';
-          console.error("ERROR OCCURED: " + error);
-        }
-      }
-
-      const issues = await getIssues()
-
-      if (!myerror)
-      {
-        var count = 0;
-        var json = issues.data;
-        testing = testing + " counting!!!!"
-        for(var i = 0; i < json.length; i++) {
-          var obj = json[i];
-          if (obj.state === 'open')
-          {
-            count = count + 1;
-          }
-        }
-
-        speech = assignee + " has " + count + " open issues assigned in " + owner + "/" + repo + "."
-      }
-    }
-  }
-
-  if (intent === 'available labels'  && repo && owner )
-  {
+  if (intent === 'available labels' && repo && owner) {
     speech = "Something went wrong."
-    
+
     testing = testing + " passed inputs."
 
-    const getIssues = async () => 
-    {
+    const getIssues = async () => {
       var myerror = false;
-      try 
-      {
+      try {
         testing = testing + " in getIssues(). " + owner + repo
         return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues?state=all&per_page=100`);
-      } catch (error) 
-      {
+      } catch (error) {
         myerror = true;
         speech = 'Cannot get the available labels in ' + owner + "/" + repo + '.';
         console.error("ERROR OCCURED: " + error);
@@ -186,50 +119,42 @@ restService.post( "/", async function (req, res) {
 
     const issues = await getIssues()
 
-    if (!myerror)
-    {
+    if (!myerror) {
       var labels = new Set();
       var json = issues.data;
       console.log(json.length)
       testing = testing + " counting!!!!"
-      for(var i = 0; i < json.length; i++) {
-        for (var j = 0; j < json[i].labels.length; j++)
-        {
+      for (var i = 0; i < json.length; i++) {
+        for (var j = 0; j < json[i].labels.length; j++) {
           var lbl = json[i].labels[j].name;
           labels.add(lbl);
         }
       }
       speech = "The available labels are "
-      for(var labl of labels.values())
-      {
-          speech += labl + ", "
+      for (var labl of labels.values()) {
+        speech += labl + ", "
       }
       speech = speech.slice(0, speech.length - 2) + "."
     }
   }
 
-  if (intent === 'issues with label' && repo && owner )
-  {
+  if (intent === 'issues with label' && repo && owner) {
     var label = req.body.queryResult.parameters.label
-    ? req.body.queryResult.parameters.label : null
-    
+      ? req.body.queryResult.parameters.label : null
+
     testing = testing + " passed inputs."
 
     // var label = req.body.label ? req.body.label : null;
 
     speech = "Something went wrong. Possibly the label parameter."
 
-    if (label)
-    {
+    if (label) {
       var myerror = false;
-      const getIssues = async () => 
-      {
-        try 
-        {
+      const getIssues = async () => {
+        try {
           testing = testing + " in getIssues(). " + owner + repo
           return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues?labels=${encodeURIComponent(label)}`);
-        } catch (error) 
-        {
+        } catch (error) {
           myerror = true;
           speech = 'Cannot get the open issues with label ' + label + ' in ' + owner + "/" + repo + '.';
           console.error("ERROR OCCURED: " + error);
@@ -238,27 +163,121 @@ restService.post( "/", async function (req, res) {
 
       const issues = await getIssues()
 
-      if (!myerror)
-      {
+      if (!myerror) {
         var json = issues.data;
         var titles = [];
         testing = testing + " counting!!!!"
-        for(var i = 0; i < json.length; i++) {
-            titles.push(json[i].title);
+        for (var i = 0; i < json.length; i++) {
+          titles.push(json[i].title);
         }
         console.log(titles)
-        if (json.length > 0)
-        {
+        if (json.length > 0) {
           speech = "There are " + json.length + " issues with label " + label + "." + " The titles include "
-          for(var t of titles.values())
-          {
-              speech += t + ", "
+          for (var t of titles.values()) {
+            speech += t + ", "
           }
           speech = speech.slice(0, speech.length - 2) + "."
         }
-        else
-        {
+        else {
           speech = "There are no issues with the label " + label + " in " + owner + "/" + repo + "."
+        }
+      }
+    }
+  }
+
+  if (intent === 'issues assigned to x' && repo && owner) {
+    var assignee = req.body.queryResult.parameters.assignee
+    ? req.body.queryResult.parameters.assignee : null
+
+    testing = testing + " passed inputs."
+
+    // var assignee = req.body.assignee ? req.body.assignee : null;
+
+    speech = "Something went wrong. Possibly the label parameter."
+
+    if (assignee) {
+      var myerror = false;
+      const getIssues = async () => {
+        try {
+          testing = testing + " in getIssues(). " + owner + repo
+          return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues?assignee=${assignee}`);
+        } catch (error) {
+          myerror = true;
+          speech = 'Cannot get number of open issues assigned to ' + assignee + ' in ' + owner + "/" + repo + '.';
+          console.error("ERROR OCCURED: " + error);
+        }
+      }
+
+      const issues = await getIssues()
+
+      if (!myerror) {
+        var json = issues.data;
+        var titles = []
+        testing = testing + " counting!!!!"
+        for (var i = 0; i < json.length; i++) {
+          titles.push(json[i].title);
+        }
+        console.log(titles)
+
+        if (json.length > 0) {
+          speech = "There are " + json.length + " open issues with assigned to " + assignee + "." + " The titles include "
+          for (var t of titles.values()) {
+            speech += t + ", "
+          }
+          speech = speech.slice(0, speech.length - 2) + "."
+        }
+        else {
+          speech = "There are no issues with the assignee " + assignee + " assigned in " + owner + "/" + repo + "."
+        }
+      }
+    }
+  }
+
+  if (intent === 'issue number assignees' && repo && owner) {
+    var issue_num = req.body.queryResult.parameters.number
+    ? req.body.queryResult.parameters.number : null
+
+    testing = testing + " passed inputs."
+
+    // var issue_num = req.body.number ? req.body.number : null;
+
+    speech = "Something went wrong. Possibly the label parameter."
+
+    if (issue_num) {
+      var myerror = false;
+      const getIssues = async () => {
+        try {
+          testing = testing + " in getIssues(). " + owner + repo
+          return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues/${issue_num}`);
+        } catch (error) {
+          myerror = true;
+          speech = 'Cannot get the assignees of the issue number ' + issue_num + ' in ' + owner + "/" + repo + '.';
+          console.error("ERROR OCCURED: " + error);
+        }
+      }
+
+      const issues = await getIssues()
+
+      if (!myerror) {
+        var json = issues.data;
+        testing = testing + " counting!!!!"
+
+        if (json.assignees.length > 1) {
+          speech = "There are " + json.assignees.length + " people assigned to issue #" + issue_num + "." + " They are "
+          for (var i = 0 ; i < json.assignees.length; i++) {
+            speech += json.assignees[i].login + ", "
+          }
+          speech = speech.slice(0, speech.length - 2) + "."
+        }
+        else {
+          if (json.assignees.length === 1)
+          {
+            speech = "Issue #" + issue_num + " was assigned to " + json.assignees[0].login + "."
+          }
+          else
+          {
+            speech = "Issue #" + issue_num + " has no assignee in " + owner + "/" + repo + "."
+          }
         }
       }
     }
