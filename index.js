@@ -18,27 +18,27 @@ restService.use(
 restService.use(bodyParser.json());
 
 restService.post("/", async function (req, res) {
-  // var intent = req.body.queryResult && 
-  // req.body.queryResult.intent && 
-  // req.body.queryResult.intent.displayName 
-  // ? req.body.queryResult.intent.displayName 
-  // :  "No intent."
+  var intent = req.body.queryResult && 
+  req.body.queryResult.intent && 
+  req.body.queryResult.intent.displayName 
+  ? req.body.queryResult.intent.displayName 
+  :  "No intent."
 
-  var intent = req.body.queryResult &&
-    req.body.intent
-    ? req.body.intent
-    : "No intent."
+  // var intent = req.body.queryResult &&
+  //   req.body.intent
+  //   ? req.body.intent
+  //   : "No intent."
 
-  // var repo = req.body.queryResult &&
-  //   req.body.queryResult.parameters &&
-  //   req.body.queryResult.parameters.repo ? req.body.queryResult.parameters.repo : null
+  var repo = req.body.queryResult &&
+    req.body.queryResult.parameters &&
+    req.body.queryResult.parameters.repo ? req.body.queryResult.parameters.repo : null
 
-  // var owner = req.body.queryResult &&
-  //   req.body.queryResult.parameters &&
-  //   req.body.queryResult.parameters.owner ? req.body.queryResult.parameters.owner : null
+  var owner = req.body.queryResult &&
+    req.body.queryResult.parameters &&
+    req.body.queryResult.parameters.owner ? req.body.queryResult.parameters.owner : null
 
-  var repo = req.body.repo ? req.body.repo : null
-  var owner = req.body.owner ? req.body.owner : null
+  // var repo = req.body.repo ? req.body.repo : null
+  // var owner = req.body.owner ? req.body.owner : null
 
   var testing = "nothing."
 
