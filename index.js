@@ -3,8 +3,11 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const axios = require("axios")
+require('dotenv').config()
 
 const restService = express();
+
+const token = process.env.GITHUB_API_KEY
 
 restService.use(
   bodyParser.urlencoded({
@@ -15,27 +18,27 @@ restService.use(
 restService.use(bodyParser.json());
 
 restService.post("/", async function (req, res) {
-  var intent = req.body.queryResult && 
-  req.body.queryResult.intent && 
-  req.body.queryResult.intent.displayName 
-  ? req.body.queryResult.intent.displayName 
-  :  "No intent."
+  // var intent = req.body.queryResult && 
+  // req.body.queryResult.intent && 
+  // req.body.queryResult.intent.displayName 
+  // ? req.body.queryResult.intent.displayName 
+  // :  "No intent."
 
-  // var intent = req.body.queryResult &&
-  //   req.body.intent
-  //   ? req.body.intent
-  //   : "No intent."
+  var intent = req.body.queryResult &&
+    req.body.intent
+    ? req.body.intent
+    : "No intent."
 
-  var repo = req.body.queryResult &&
-    req.body.queryResult.parameters &&
-    req.body.queryResult.parameters.repo ? req.body.queryResult.parameters.repo : null
+  // var repo = req.body.queryResult &&
+  //   req.body.queryResult.parameters &&
+  //   req.body.queryResult.parameters.repo ? req.body.queryResult.parameters.repo : null
 
-  var owner = req.body.queryResult &&
-    req.body.queryResult.parameters &&
-    req.body.queryResult.parameters.owner ? req.body.queryResult.parameters.owner : null
+  // var owner = req.body.queryResult &&
+  //   req.body.queryResult.parameters &&
+  //   req.body.queryResult.parameters.owner ? req.body.queryResult.parameters.owner : null
 
-  // var repo = req.body.repo ? req.body.repo : null
-  // var owner = req.body.owner ? req.body.owner : null
+  var repo = req.body.repo ? req.body.repo : null
+  var owner = req.body.owner ? req.body.owner : null
 
   var testing = "nothing."
 
@@ -45,8 +48,10 @@ restService.post("/", async function (req, res) {
   owner = owner ? owner.replace(/\s/g, '') : null
 
   if (intent === 'number of repos for user') {
-    var username = req.body.queryResult.parameters.userName
-      ? req.body.queryResult.parameters.userName : null;
+    // var username = req.body.queryResult.parameters.userName
+    //   ? req.body.queryResult.parameters.userName : null;
+
+    var username = req.body.userName ? req.body.userName : null;
 
     speech = "Something went wrong. Possibly the username parameter."
 
@@ -55,7 +60,8 @@ restService.post("/", async function (req, res) {
 
       const getRepos = async () => {
         try {
-          return await axios.get(`https://api.github.com/users/${username}/repos`);
+          return await axios.get(`https://api.github.com/users/${username}/repos`, 
+                                  {headers: { 'Authorization': `Token ${token}`}})
         } catch (error) {
           myerror = true;
           speech = 'Cannot get number of repos for ' + username + '.';
@@ -81,7 +87,8 @@ restService.post("/", async function (req, res) {
     const getIssues = async () => {
       try {
         testing = testing + " in getIssues(). " + owner + repo
-        return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues`);
+        return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues`, 
+                                {headers: { 'Authorization': `Token ${token}`}});
       } catch (error) {
         myerror = true;
         speech = 'Cannot get number of open issues for ' + owner + "/" + repo + '.';
@@ -109,7 +116,8 @@ restService.post("/", async function (req, res) {
       var myerror = false;
       try {
         testing = testing + " in getIssues(). " + owner + repo
-        return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues?state=all&per_page=100`);
+        return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues?state=all&per_page=100`,
+                                {headers: { 'Authorization': `Token ${token}`}});
       } catch (error) {
         myerror = true;
         speech = 'Cannot get the available labels in ' + owner + "/" + repo + '.';
@@ -153,7 +161,8 @@ restService.post("/", async function (req, res) {
       const getIssues = async () => {
         try {
           testing = testing + " in getIssues(). " + owner + repo
-          return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues?labels=${encodeURIComponent(label)}`);
+          return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues?labels=${encodeURIComponent(label)}`, 
+                                  {headers: { 'Authorization': `Token ${token}`}});
         } catch (error) {
           myerror = true;
           speech = 'Cannot get the open issues with label ' + label + ' in ' + owner + "/" + repo + '.';
@@ -200,7 +209,8 @@ restService.post("/", async function (req, res) {
       const getIssues = async () => {
         try {
           testing = testing + " in getIssues(). " + owner + repo
-          return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues?assignee=${assignee}`);
+          return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues?assignee=${assignee}`, 
+                                  {headers: { 'Authorization': `Token ${token}`}});
         } catch (error) {
           myerror = true;
           speech = 'Cannot get number of open issues assigned to ' + assignee + ' in ' + owner + "/" + repo + '.';
@@ -248,7 +258,8 @@ restService.post("/", async function (req, res) {
       const getIssues = async () => {
         try {
           testing = testing + " in getIssues(). " + owner + repo
-          return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues/${issue_num}`);
+          return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues/${issue_num}`, 
+                                  {headers: { 'Authorization': `Token ${token}`}});
         } catch (error) {
           myerror = true;
           speech = 'Cannot get the assignees of the issue number ' + issue_num + ' in ' + owner + "/" + repo + '.';
@@ -280,6 +291,70 @@ restService.post("/", async function (req, res) {
           }
         }
       }
+    }
+  }
+
+  if (intent === 'issues added recently' && repo && owner) {
+    var startDate = req.body.queryResult.parameters.date-period && req.body.queryResult.parameters.date-period.startDate
+    ? req.body.queryResult.parameters.date-period.startDate : null
+    var endDate = req.body.queryResult.parameters.date-period && req.body.queryResult.parameters.date-period.endDate
+    ? req.body.queryResult.parameters.date-period.endDate : null
+
+    testing = testing + " passed inputs."
+
+    // var startDate = req.body.startDate ? req.body.startDate : null;
+    // var endDate = req.body.endDate ? req.body.endDate : null;
+
+    speech = "Something went wrong. Possibly the label parameter."
+
+    if (startDate && endDate) {
+      var myerror = false;
+      const getIssues = async () => {
+        try {
+          testing = testing + " in getIssues(). " + owner + repo
+          return await axios.get(`https://api.github.com/repos/${owner}/${repo}/issues`, 
+                                {headers: { 'Authorization': `Token ${token}`}});
+        } catch (error) {
+          myerror = true;
+          speech = 'Cannot get the assignees of the issue number ' + issue_num + ' in ' + owner + "/" + repo + '.';
+          console.error("ERROR OCCURED: " + error);
+        }
+      }
+      const issues = await getIssues()
+
+      if (!myerror) {
+        var start = new Date(startDate)
+        var end = new Date(endDate)
+
+        var json = issues.data;
+
+        console.log(json)
+
+        var titles = []
+        for (var i = 0; i < json.length; i++) {
+          var data = new Date(json[i].created_at)
+          console.log(data)
+          if (data - start >= 0 && end - data >= 0)
+          { 
+            titles.push(json[i].title);
+          }
+        }
+        console.log(titles)
+
+        if (json.length > 0) {
+          speech = "There are " + titles.length + " open issues that is within the span of time." + " The titles include "
+          for (var t of titles.values()) {
+            speech += t + ", "
+          }
+          speech = speech.slice(0, speech.length - 2) + "."
+        }
+        else {
+          speech = "There are no issues within the span of time in " + owner + "/" + repo + "."
+        }
+      }
+    }
+    else {
+      speech = "Something went wrong. Possibly the date-period parameter."
     }
   }
 
