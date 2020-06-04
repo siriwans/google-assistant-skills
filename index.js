@@ -295,10 +295,10 @@ restService.post("/", async function (req, res) {
   }
 
   if (intent === 'issues added recently' && repo && owner) {
-    var startDate = req.body.queryResult.parameters.date-period && req.body.queryResult.parameters.date-period.startDate
-    ? req.body.queryResult.parameters.date-period.startDate : null
-    var endDate = req.body.queryResult.parameters.date-period && req.body.queryResult.parameters.date-period.endDate
-    ? req.body.queryResult.parameters.date-period.endDate : null
+    var startDate = req.body.queryResult.parameters.date_period && req.body.queryResult.parameters.date_period.startDate
+    ? req.body.queryResult.parameters.date_period.startDate : null
+    var endDate = req.body.queryResult.parameters.date_period && req.body.queryResult.parameters.date_period.endDate
+    ? req.body.queryResult.parameters.date_period.endDate : null
 
     testing = testing + " passed inputs."
 
@@ -354,7 +354,7 @@ restService.post("/", async function (req, res) {
       }
     }
     else {
-      speech = "Something went wrong. Possibly the date-period parameter."
+      speech = "Something went wrong. Possibly the date_period parameter."
     }
   }
 
